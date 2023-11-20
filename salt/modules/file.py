@@ -5722,6 +5722,9 @@ def check_file_meta(
         changes["newfile"] = name
         return changes
 
+    log.debug(f"source_sum: {source_sum}")
+    log.debug(f"lstats: {lstats}")
+
     if "hsum" in source_sum:
         if source_sum["hsum"] != lstats["sum"]:
             if not sfn and source:
@@ -5736,6 +5739,7 @@ def check_file_meta(
                     diff = get_diff(
                         name, sfn, template=True, show_filenames=False
                     )
+                    log.debug(f"diff: {diff}, {repr(diff)}")
                 except CommandExecutionError as exc:
                     diff = exc.strerror
 
