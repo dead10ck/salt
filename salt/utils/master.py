@@ -1,8 +1,8 @@
 """
-    salt.utils.master
-    -----------------
+salt.utils.master
+-----------------
 
-    Utilities that can only be used on a salt master.
+Utilities that can only be used on a salt master.
 
 """
 
@@ -156,7 +156,6 @@ class MasterPillarUtil:
         pillar_fallback=True,
         opts=None,
     ):
-
         log.debug("New instance of %s created.", self.__class__.__name__)
         if opts is None:
             log.error("%s: Missing master opts init arg.", self.__class__.__name__)
@@ -713,7 +712,6 @@ class ConnectedCache(Process):
         log.info("ConCache started")
 
         while self.running:
-
             # we check for new events with the poller
             try:
                 socks = dict(poller.poll(1))
@@ -755,7 +753,6 @@ class ConnectedCache(Process):
                 # 3. anything else is considered malformed
 
                 try:
-
                     if not new_c_data:
                         log.debug("ConCache Got empty update from worker")
                         continue
@@ -848,7 +845,6 @@ def get_values_of_matching_keys(pattern_dict, user_name):
 
 # test code for the ConCache class
 if __name__ == "__main__":
-
     opts = salt.config.master_config("/etc/salt/master")
 
     conc = ConnectedCache(opts)

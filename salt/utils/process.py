@@ -201,7 +201,9 @@ def get_process_info(pid=None):
     if pid is None:
         pid = os.getpid()
     elif not psutil.pid_exists(pid):
-        return
+        return None
+
+    log.trace(f"checking pid {pid} status")
 
     raw_process_info = psutil.Process(pid)
 
@@ -210,14 +212,20 @@ def get_process_info(pid=None):
     # another reasons is the process requires kernel permissions
     try:
         raw_process_info.status()
-    except psutil.NoSuchProcess:
+    except (psutil.NoSuchProcess, psutil.AccessDenied):
         return None
 
-    return {
-        "pid": raw_process_info.pid,
-        "name": raw_process_info.name(),
-        "start_time": raw_process_info.create_time(),
-    }
+    log.debug(f"pid {pid} status: {raw_process_info}")
+
+    try:
+        return {
+            "pid": raw_process_info.pid,
+            "name": raw_process_info.name(),
+            "start_time": raw_process_info.create_time(),
+        }
+    except psutil.AccessDenied:
+        log.warn(f"unable to get status details of process {pid}")
+        return None
 
 
 def claim_mantle_of_responsibility(file_name):

@@ -362,62 +362,6 @@ def check_user(user):
     return True
 
 
-def list_path_traversal(path):
-    """
-    Returns a full list of directories leading up to, and including, a path.
-
-    So list_path_traversal('/path/to/salt') would return:
-        ['/', '/path', '/path/to', '/path/to/salt']
-    in that order.
-
-    This routine has been tested on Windows systems as well.
-    list_path_traversal('c:\\path\\to\\salt') on Windows would return:
-        ['c:\\', 'c:\\path', 'c:\\path\\to', 'c:\\path\\to\\salt']
-    """
-    out = [path]
-    (head, tail) = os.path.split(path)
-    if tail == "":
-        # paths with trailing separators will return an empty string
-        out = [head]
-        (head, tail) = os.path.split(head)
-    while head != out[0]:
-        # loop until head is the same two consecutive times
-        out.insert(0, head)
-        (head, tail) = os.path.split(head)
-    return out
-
-
-def check_path_traversal(path, user="root", skip_perm_errors=False):
-    """
-    Walk from the root up to a directory and verify that the current
-    user has access to read each directory. This is used for  making
-    sure a user can read all parent directories of the minion's  key
-    before trying to go and generate a new key and raising an IOError
-    """
-    for tpath in list_path_traversal(path):
-        if not os.access(tpath, os.R_OK):
-            msg = f"Could not access {tpath}."
-            if not os.path.exists(tpath):
-                msg += " Path does not exist."
-            else:
-                current_user = salt.utils.user.get_user()
-                # Make the error message more intelligent based on how
-                # the user invokes salt-call or whatever other script.
-                if user != current_user:
-                    msg += f" Try running as user {user}."
-                else:
-                    msg += f" Please give {user} read permissions."
-
-            # We don't need to bail on config file permission errors
-            # if the CLI
-            # process is run with the -a flag
-            if skip_perm_errors:
-                return
-            # Propagate this exception up so there isn't a sys.exit()
-            # in the middle of code that could be imported elsewhere.
-            raise SaltClientError(msg)
-
-
 def check_max_open_files(opts):
     """
     Check the number of max allowed open files and adjust if needed
