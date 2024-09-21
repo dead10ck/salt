@@ -248,10 +248,6 @@ class LocalClient:
             key_user = key_user.replace("\\", "_")
         keyfile = os.path.join(self.opts["cachedir"], f".{key_user}_key")
         try:
-            # Make sure all key parent directories are accessible
-            salt.utils.verify.check_path_traversal(
-                self.opts["cachedir"], key_user, self.skip_perm_errors
-            )
             with salt.utils.files.fopen(keyfile, "r") as key:
                 return salt.utils.stringutils.to_unicode(key.read())
         except (OSError, SaltClientError):

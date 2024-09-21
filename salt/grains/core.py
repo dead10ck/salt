@@ -268,6 +268,8 @@ def _linux_gpu_data():
         return {}
 
     lspci = salt.utils.path.which("lspci")
+    log.trace(f"which lspci: {lspci}")
+
     if not lspci:
         log.debug(
             "The `lspci` binary is not available on the system. GPU grains "
@@ -289,37 +291,40 @@ def _linux_gpu_data():
     gpu_classes = ("vga compatible controller", "3d controller", "display controller")
 
     devs = []
-    try:
-        lspci_out = __salt__["cmd.run"](f"{lspci} -vmm")
+    # try:
+    lspci_out = __salt__["cmd.run"](f"{lspci} -vmm")
+    log.trace(f"lspci_out: {lspci_out}")
 
-        cur_dev = {}
-        error = False
-        # Add a blank element to the lspci_out.splitlines() list,
-        # otherwise the last device is not evaluated as a cur_dev and ignored.
-        lspci_list = lspci_out.splitlines()
-        lspci_list.append("")
-        for line in lspci_list:
-            # check for record-separating empty lines
-            if line == "":
-                if cur_dev.get("Class", "").lower() in gpu_classes:
-                    devs.append(cur_dev)
-                cur_dev = {}
-                continue
-            if re.match(r"^\w+:\s+.*", line):
-                key, val = line.split(":", 1)
-                cur_dev[key.strip()] = val.strip()
-            else:
-                error = True
-                log.debug("Unexpected lspci output: '%s'", line)
+    cur_dev = {}
+    error = False
+    # Add a blank element to the lspci_out.splitlines() list,
+    # otherwise the last device is not evaluated as a cur_dev and ignored.
+    lspci_list = lspci_out.splitlines()
+    lspci_list.append("")
+    for line in lspci_list:
+        # check for record-separating empty lines
+        if line == "":
+            if cur_dev.get("Class", "").lower() in gpu_classes:
+                devs.append(cur_dev)
+            cur_dev = {}
+            continue
+        if re.match(r"^\w+:\s+.*", line):
+            key, val = line.split(":", 1)
+            cur_dev[key.strip()] = val.strip()
+        else:
+            error = True
+            log.debug("Unexpected lspci output: '%s'", line)
 
-        if error:
-            log.warning(
-                "Error loading grains, unexpected linux_gpu_data output, "
-                "check that you have a valid shell configured and "
-                "permissions to run lspci command"
-            )
-    except OSError:
-        pass
+    if error:
+        log.warning(
+            "Error loading grains, unexpected linux_gpu_data output, "
+            "check that you have a valid shell configured and "
+            "permissions to run lspci command"
+        )
+    # except OSError:
+    #     pass
+
+    log.trace(f"devs: {devs}")
 
     gpus = []
     for gpu in devs:
@@ -2622,6 +2627,21 @@ def os_data():
     ) = platform.uname()
     # pylint: enable=unpacking-non-sequence
 
+    def try_grain(op):
+        try:
+            data = op()
+        except Exception as err:
+            exc_info = None
+
+            if log.getEffectiveLevel() >= logging.DEBUG:
+                exc_info = err
+
+            log.warn(f"error getting grain data: {err}", exc_info=exc_info)
+            return
+
+        log.trace(f"got grain data: {data}")
+        grains.update(data)
+
     if salt.utils.platform.is_junos():
         grains["kernel"] = "Junos"
         grains["osfullname"] = "Junos"
@@ -2673,24 +2693,31 @@ def os_data():
         # Add SELinux grain, if you have it
         if _linux_bin_exists("selinuxenabled"):
             log.trace("Adding selinux grains")
-            grains["selinux"] = _selinux()
+            try_grain(lambda: {"selinux": _selinux()})
 
         # Add systemd grain, if you have it
         if _linux_bin_exists("systemctl") and _linux_bin_exists("localectl"):
             log.trace("Adding systemd grains")
-            grains["systemd"] = _systemd()
+            try_grain(lambda: {"systemd": _systemd()})
 
         # Add init grain
         log.trace("Adding init grain")
-        grains["init"] = _linux_init_system()
+        try_grain(lambda: {"init": _linux_init_system()})
 
-        grains.update(_linux_distribution_data())
-        grains.update(_linux_cpudata())
-        grains.update(_linux_gpu_data())
+        log.trace("Adding linux distro grains")
+        try_grain(_linux_distribution_data)
+
+        log.trace("Adding cpu grains")
+        try_grain(_linux_cpudata)
+
+        log.trace("Adding gpu grains")
+        try_grain(_linux_gpu_data)
 
         # only if devicetree is mounted
         if os.path.isdir("/proc/device-tree"):
-            grains.update(_linux_devicetree_platform_data())
+            log.trace("Adding device tree grains")
+            try_grain(_linux_devicetree_platform_data)
+
     elif grains["kernel"] == "SunOS":
         grains["os_family"] = "Solaris"
         if salt.utils.platform.is_smartos():

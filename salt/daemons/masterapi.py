@@ -46,7 +46,8 @@ from salt.pillar import git_pillar
 try:
     import pwd
 
-    HAS_PWD = True
+    # some systems have pwd, but not the whole API, e.g. Android
+    HAS_PWD = hasattr(pwd, "getpwall")
 except ImportError:
     # pwd is not available on windows
     HAS_PWD = False

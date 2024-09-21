@@ -18,6 +18,12 @@ known_third_party = [
   "pytest"
 ]
 
+[tool.pylsp-mypy]
+enabled = true
+live_mode = false
+dmypy = false
+report_progress = true
+
 [tool.towncrier]
     package = "salt"
     filename = "CHANGELOG.md"

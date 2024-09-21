@@ -313,7 +313,7 @@ class SaltLoggingClass(LOGGING_LOGGER_CLASS, metaclass=LoggingMixinMeta):
         sinfo=None,
     ):
         # Let's remove exc_info_on_loglevel from extra
-        exc_info_on_loglevel = extra.pop("exc_info_on_loglevel")
+        exc_info_on_loglevel = extra.pop("exc_info_on_loglevel", None)
 
         jid = extra.pop("jid", "")
         if jid:

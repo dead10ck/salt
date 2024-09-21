@@ -1066,10 +1066,6 @@ class AsyncAuth:
         :rtype: Crypto.PublicKey.RSA._RSAobj
         :return: The RSA keypair
         """
-        # Make sure all key parent directories are accessible
-        user = self.opts.get("user", "root")
-        salt.utils.verify.check_path_traversal(self.opts["pki_dir"], user)
-
         if not os.path.exists(self.rsa_path):
             log.info("Generating keys: %s", self.opts["pki_dir"])
             gen_keys(
@@ -1078,8 +1074,10 @@ class AsyncAuth:
                 self.opts["keysize"],
                 self.opts.get("user"),
             )
+
         key = get_rsa_key(self.rsa_path, None)
         log.debug("Loaded minion key: %s", self.rsa_path)
+
         return key
 
     def gen_token(self, clear_tok):
