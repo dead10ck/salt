@@ -184,9 +184,7 @@ echo "ERROR: Unable to locate appropriate python command" >&2
 exit $EX_PYTHON_INVALID
 EOF'''.format(
             EX_THIN_PYTHON_INVALID=salt.defaults.exitcodes.EX_THIN_PYTHON_INVALID,
-        ).split(
-            "\n"
-        )
+        ).split("\n")
     ]
 )
 
@@ -1254,12 +1252,14 @@ class Single:
             opts_pkg["master_tops"] = self.opts["master_tops"]
             opts_pkg["extra_filerefs"] = self.opts.get("extra_filerefs", "")
             opts_pkg["__master_opts__"] = self.context["master_opts"]
+
             if "known_hosts_file" in self.opts:
                 opts_pkg["known_hosts_file"] = self.opts["known_hosts_file"]
             if "_caller_cachedir" in self.opts:
                 opts_pkg["_caller_cachedir"] = self.opts["_caller_cachedir"]
             else:
                 opts_pkg["_caller_cachedir"] = self.opts["cachedir"]
+
             # Use the ID defined in the roster file
             opts_pkg["id"] = self.id
 
@@ -1268,6 +1268,7 @@ class Single:
             # Restore master grains
             for grain in conf_grains:
                 opts_pkg["grains"][grain] = conf_grains[grain]
+
             # Enable roster grains support
             if "grains" in self.target:
                 for grain in self.target["grains"]:
@@ -1292,12 +1293,15 @@ class Single:
                 "grains": opts_pkg["grains"],
                 "pillar": pillar_data,
             }
+
             if data_cache:
                 with salt.utils.files.fopen(datap, "w+b") as fp_:
                     fp_.write(salt.payload.dumps(data))
+
         if not data and data_cache:
             with salt.utils.files.fopen(datap, "rb") as fp_:
                 data = salt.payload.load(fp_)
+
         opts = data.get("opts", {})
         opts["grains"] = data.get("grains")
 
@@ -1324,7 +1328,7 @@ class Single:
             minion_opts=self.minion_opts,
             **self.target,
         )
-        wrapper.fsclient.opts["cachedir"] = opts["cachedir"]
+
         self.wfuncs = salt.loader.ssh_wrapper(opts, wrapper, self.context)
         wrapper.wfuncs = self.wfuncs
 
