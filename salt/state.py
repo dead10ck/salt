@@ -788,14 +788,24 @@ class State:
         if "grains" not in opts:
             opts["grains"] = salt.loader.grains(opts)
         self.opts = opts
+
+        client = self.opts.get("file_client", "remote")
+
+        # if using a local client, we have to use the master opts for things
+        # like the cachedir
+        if client == "local" and "__master_opts__" in self.opts:
+            self.opts.update(self.opts.get("__master_opts__"))
+
         if file_client:
             self.file_client = file_client
             self.preserve_file_client = True
         else:
             self.file_client = salt.fileclient.get_file_client(self.opts)
             self.preserve_file_client = False
+
         self.proxy = proxy
         self._pillar_override = pillar_override
+
         if pillar_enc is not None:
             try:
                 pillar_enc = pillar_enc.lower()
@@ -925,9 +935,7 @@ class State:
         """
         # ensure that the module is loaded
         try:
-            self.states[
-                "{}.{}".format(low["state"], low["fun"])
-            ]  # pylint: disable=W0106
+            self.states["{}.{}".format(low["state"], low["fun"])]  # pylint: disable=W0106
         except KeyError:
             return
         minit = "{}.mod_init".format(low["state"])
@@ -1958,7 +1966,6 @@ class State:
                         if isinstance(items, dict):
                             # Formatted as a single req_in
                             for _state, name in items.items():
-
                                 # Not a use requisite_in
                                 found = False
                                 if name not in extend:
@@ -2201,7 +2208,6 @@ class State:
             low["retry"] = instance.verify_retry_data(low["retry"])
             if not instance.states.opts["test"]:
                 while low["retry"]["attempts"] >= retries:
-
                     if low["retry"]["until"] == ret["result"]:
                         break
 
@@ -3835,6 +3841,10 @@ class BaseHighState:
             opts["jinja_sls_env"] = mopts.get("jinja_sls_env", {})
             opts["jinja_lstrip_blocks"] = mopts.get("jinja_lstrip_blocks", False)
             opts["jinja_trim_blocks"] = mopts.get("jinja_trim_blocks", False)
+
+        if opts.get("__master_opts__"):
+            opts["__master_opts__"] = self.__gen_opts(opts.get("__master_opts__"))
+
         return opts
 
     def _get_envs(self):

@@ -713,9 +713,7 @@ class Client:
                         with salt.utils.files.fopen(dest_etag, "w") as etagfp:
                             etag = etagfp.write(etag)
                     elif "Content-Type" in write_body[1]:
-                        content_type = write_body[1].get(
-                            "Content-Type"
-                        )  # pylint: disable=no-member
+                        content_type = write_body[1].get("Content-Type")  # pylint: disable=no-member
                         if not content_type.startswith("text"):
                             write_body[2] = False
                             if not use_etag or write_body[3]:
@@ -1434,7 +1432,7 @@ class RemoteClient(Client):
         hash_result = self.hash_file(path, saltenv)
         try:
             path = self._check_proto(path)
-        except MinionError as err:
+        except MinionError:
             if not os.path.isfile(path):
                 return hash_result, None
             else:

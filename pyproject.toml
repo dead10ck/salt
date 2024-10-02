@@ -1,3 +1,15 @@
+[tool.ruff]
+# these are all injected into many modules dynamically at runtime, which causes
+# "undefined name" errors, so treat them as globals
+builtins = [
+    "__context__",
+    "__grains__",
+    "__opts__",
+    "__pillar__",
+    "__proxy__",
+    "__salt__",
+]
+
 [tool.black]
 exclude= """
 /(

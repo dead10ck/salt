@@ -948,7 +948,6 @@ def sls_id(id_, mods, test=None, queue=False, **kwargs):
         context=__context__.value(),
         initial_pillar=initial_pillar,
     ) as st_:
-
         if not _check_pillar(kwargs, st_.opts["pillar"]):
             __context__["retcode"] = salt.defaults.exitcodes.EX_PILLAR_FAILURE
             err = ["Pillar failed to render with the following messages:"]

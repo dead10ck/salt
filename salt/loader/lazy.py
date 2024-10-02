@@ -178,9 +178,7 @@ class LoadedCoro(LoadedFunc):
     :param LazyLoader loader: The loader instance to use in the context when the wrapped callable is called.
     """
 
-    async def __call__(
-        self, *args, **kwargs
-    ):  # pylint: disable=invalid-overridden-method
+    async def __call__(self, *args, **kwargs):  # pylint: disable=invalid-overridden-method
         run_func = self.func
         mod = sys.modules[run_func.__module__]
         # All modules we've imported should have __opts__ defined. There are

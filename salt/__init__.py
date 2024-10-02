@@ -55,7 +55,7 @@ class NaclImporter:
 
 
 # Try our importer first
-sys.meta_path = [NaclImporter()] + sys.meta_path
+sys.meta_path = [NaclImporter()] + sys.meta_path  # type: ignore
 
 
 # All salt related deprecation warnings should be shown once each!
@@ -122,6 +122,7 @@ del __define_global_system_encoding_variable__
 # Make sure Salt's logging tweaks are always present
 # DO NOT MOVE THIS IMPORT
 # pylint: disable=unused-import
-import salt._logging  # isort:skip
+# isort:skip
+import salt._logging  # noqa: E402,F401
 
 # pylint: enable=unused-import
