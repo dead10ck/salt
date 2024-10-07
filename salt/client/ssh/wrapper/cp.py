@@ -921,9 +921,7 @@ class SSHCpClient(salt.fileclient.FSClient):
 
         return ""
 
-    def get_cachedir(
-        self, cachedir=None, master=True
-    ):  # pylint: disable=arguments-differ
+    def get_cachedir(self, cachedir=None, master=True):  # pylint: disable=arguments-differ
         prefix = []
         if master:
             prefix = ["salt-ssh", self.tgt]

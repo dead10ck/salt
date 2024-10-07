@@ -2,6 +2,7 @@
 URL utils
 """
 
+import logging
 import re
 import sys
 from urllib.parse import urlparse, urlunparse
@@ -10,6 +11,8 @@ import salt.utils.data
 import salt.utils.path
 import salt.utils.platform
 import salt.utils.versions
+
+log = logging.getLogger(__name__)
 
 
 def parse(url):
@@ -47,7 +50,7 @@ def create(path, saltenv=None):
 
     query = f"saltenv={saltenv}" if saltenv else ""
     url = salt.utils.data.decode(urlunparse(("file", "", path, "", query, "")))
-    return "salt://{}".format(url[len("file:///") :])
+    return f'salt://{re.sub(r"file:/*", "", url)}'
 
 
 def is_escaped(url):

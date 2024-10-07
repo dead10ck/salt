@@ -424,7 +424,6 @@ def get_url(path, dest="", saltenv=None, makedirs=False, source_hash=None):
                 path, dest, makedirs, saltenv, source_hash=source_hash
             )
     else:
-
         with _client() as client:
             result = client.get_url(
                 path, None, makedirs, saltenv, no_cache=True, source_hash=source_hash
@@ -876,7 +875,9 @@ def hash_file(path, saltenv=None):
     if not saltenv:
         saltenv = __opts__["saltenv"] or "base"
 
+    log.debug(f"hash_file: {path}")
     path, senv = salt.utils.url.split_env(path)
+    log.debug(f"split_env(hash_file): {path}")
     if senv:
         saltenv = senv
 

@@ -7,7 +7,6 @@ group, mode, and data
 # TODO: We should add the capability to do u+r type operations here
 # some time in the future
 
-
 import datetime
 import errno
 import fnmatch
@@ -4847,6 +4846,7 @@ def get_managed(
 
         if parsed_scheme == "salt":
             source_sum = __salt__["cp.hash_file"](source, saltenv)
+            log.debug(f"sfn 4849: {sfn}")
             if not source_sum:
                 return (
                     "",
@@ -4926,6 +4926,7 @@ def get_managed(
         # as invoking os.path.exists() on a bool raises a TypeError.
         if not sfn or not os.path.exists(sfn):
             _source = salt.utils.url.redact_http_basic_auth(source)
+            log.debug(f"sfn 4929: {sfn}")
             return sfn, {}, f"Source file '{_source}' not found"
         if sfn == name:
             raise SaltInvocationError("Source file cannot be the same as destination")
@@ -5580,7 +5581,9 @@ def check_managed(
     """
     # If the source is a list then find which file exists
     source, source_hash = source_list(
-        source, source_hash, saltenv  # pylint: disable=W0633
+        source,
+        source_hash,
+        saltenv,  # pylint: disable=W0633
     )
 
     sfn = ""
@@ -5689,7 +5692,9 @@ def check_managed_changes(
     """
     # If the source is a list then find which file exists
     source, source_hash = source_list(
-        source, source_hash, saltenv  # pylint: disable=W0633
+        source,
+        source_hash,
+        saltenv,  # pylint: disable=W0633
     )
 
     sfn = ""
@@ -6350,6 +6355,7 @@ def manage_file(
         if not sfn:
             # File is not present, cache it
             sfn = __salt__["cp.cache_file"](source, saltenv, verify_ssl=verify_ssl)
+            log.debug(f"sfn 6358: {sfn}")
             if not sfn:
                 return _error(ret, f"Source file '{source}' not found")
             htype = source_sum.get("hash_type", __opts__["hash_type"])
@@ -6387,6 +6393,7 @@ def manage_file(
                 sfn = __salt__["cp.cache_file"](
                     source, saltenv, verify_ssl=verify_ssl, use_etag=use_etag
                 )
+            log.debug(f"sfn 6393: {sfn}")
             if not sfn:
                 return _error(ret, f"Source file '{source}' not found")
             # If the downloaded file came from a non salt server or local
@@ -6502,6 +6509,7 @@ def manage_file(
         if os.path.islink(name) and not follow_symlinks:
             if not sfn:
                 sfn = __salt__["cp.cache_file"](source, saltenv, verify_ssl=verify_ssl)
+            log.debug(f"sfn 6509: {sfn}")
             if not sfn:
                 return _error(ret, f"Source file '{source}' not found")
             # If the downloaded file came from a non salt server source verify
@@ -6628,6 +6636,7 @@ def manage_file(
             # Apply the new file
             if not sfn:
                 sfn = __salt__["cp.cache_file"](source, saltenv, verify_ssl=verify_ssl)
+            log.debug(f"sfn 6636: {sfn}")
             if not sfn:
                 return _error(ret, f"Source file '{source}' not found")
             # If the downloaded file came from a non salt server source verify
